@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单人连续时间强化学习论文精读报告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style type="text/tailwindcss">
+        @layer base {
+            body {
+                font-family: 'Inter', sans-serif;
+                background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+                min-height: 100vh;
+            }
+            .math {
+                font-family: 'JetBrains Mono', monospace;
+            }
+        }
+        @layer components {
+            .paper-card {
+                @apply bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-8 mb-8 transition-all duration-300 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10;
+            }
+            .section-title {
+                @apply text-xl font-semibold text-blue-400 mb-4 flex items-center gap-2;
+            }
+            .formula-box {
+                @apply bg-slate-900/80 rounded-xl p-6 my-4 border-l-4 border-blue-500 math text-slate-300 overflow-x-auto;
+            }
+            .highlight-box {
+                @apply bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl p-6 my-4 border border-blue-500/20;
+            }
+            .theorem-box {
+                @apply bg-amber-500/10 rounded-xl p-6 my-4 border-l-4 border-amber-500;
+            }
+            .timeline-dot {
+                @apply w-4 h-4 rounded-full bg-blue-500 border-4 border-slate-800;
+            }
+            .timeline-line {
+                @apply w-0.5 bg-gradient-to-b from-blue-500 to-purple-500;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-200">
+    <div class="max-w-6xl mx-auto px-6 py-12">
+        <!-- Header -->
+        <header class="text-center mb-16">
+            <div class="inline-flex items-center gap-3 mb-4 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/30">
+                <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                <span class="text-blue-400 text-sm font-medium">Single-Agent Continuous-Time RL</span>
+            </div>
+            <h1 class="text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-6">
+                单人连续时间强化学习
+            </h1>
+            <p class="text-xl text-slate-400 max-w-3xl mx-auto">
+                基于随机控制与鞅方法的统一理论框架
+            </p>
+            <div class="mt-8 flex justify-center gap-4 text-sm text-slate-500">
+                <span class="px-3 py-1 rounded-full bg-slate-800">Jia & Zhou 系列工作</span>
+                <span class="px-3 py-1 rounded-full bg-slate-800">Wang, Zariphopoulou & Zhou</span>
+                <span class="px-3 py-1 rounded-full bg-slate-800">2020-2022</span>
+            </div>
+        </header>
+
+        <!-- Timeline Overview -->
+        <div class="mb-16">
+            <h2 class="text-2xl font-bold text-center mb-8">研究脉络时间线</h2>
+            <div class="relative">
+                <div class="absolute left-1/2 transform -translate-x-1/2 h-full timeline-line"></div>
+                
+                <div class="space-y-12">
+                    <div class="flex items-center gap-8">
+                        <div class="flex-1 text-right">
+                            <div class="paper-card !mb-0 !p-6">
+                                <div class="text-amber-400 font-bold text-lg">2020</div>
+                                <h3 class="font-semibold text-lg mt-2">基础框架建立</h3>
+                                <p class="text-slate-400 text-sm mt-1">Wang et al. - 探索性HJB方程与熵正则化</p>
+                            </div>
+                        </div>
+                        <div class="timeline-dot z-10"></div>
+                        <div class="flex-1"></div>
+                    </div>
+
+                    <div class="flex items-center gap-8">
+                        <div class="flex-1"></div>
+                        <div class="timeline-dot z-10 bg-purple-500 border-purple-500"></div>
+                        <div class="flex-1">
+                            <div class="paper-card !mb-0 !p-6">
+                                <div class="text-purple-400 font-bold text-lg">2021</div>
+                                <h3 class="font-semibold text-lg mt-2">策略评估理论</h3>
+                                <p class="text-slate-400 text-sm mt-1">Jia & Zhou - 鞅方法与TD学习</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-8">
+                        <div class="flex-1 text-right">
+                            <div class="paper-card !mb-0 !p-6">
+                                <div class="text-pink-400 font-bold text-lg">2022a</div>
+                                <h3 class="font-semibold text-lg mt-2">策略梯度与Actor-Critic</h3>
+                                <p class="text-slate-400 text-sm mt-1">Jia & Zhou - 连续时间策略优化</p>
+                            </div>
+                        </div>
+                        <div class="timeline-dot z-10 bg-pink-500 border-pink-500"></div>
+                        <div class="flex-1"></div>
+                    </div>
+
+                    <div class="flex items-center gap-8">
+                        <div class="flex-1"></div>
+                        <div class="timeline-dot z-10 bg-green-500 border-green-500"></div>
+                        <div class="flex-1">
+                            <div class="paper-card !mb-0 !p-6">
+                                <div class="text-green-400 font-bold text-lg">2022b</div>
+                                <h3 class="font-semibold text-lg mt-2">Q-Learning理论</h3>
+                                <p class="text-slate-400 text-sm mt-1">Jia & Zhou - 连续时间Q学习</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paper 1: Wang et al. 2020 -->
+        <div class="paper-card" id="paper1">
+            <div class="flex items-start justify-between mb-6">
+                <div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 text-sm font-medium">2020</span>
+                        <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium">奠基性工作</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2">
+                        Reinforcement Learning in Continuous Time and Space: A Stochastic Control Approach
+                    </h2>
+                    <p class="text-slate-400">
+                        Haoran Wang, Thaleia Zariphopoulou, Xun Yu Zhou | 
+                        <span class="text-blue-400">Journal of Machine Learning Research</span> | 
+                        JMLR 21(198):1-34
+                    </p>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                研究问题与动机
+            </div>
+            <div class="text-slate-300 leading-relaxed mb-6">
+                <p class="mb-4">
+                    传统强化学习方法通常需要对时间、状态和动作空间进行先验离散化，这在连续时间连续空间（CTCS）问题中会导致：
+                </p>
+                <ul class="space-y-2 ml-6 list-disc list-disc-slate-500">
+                    <li><strong class="text-amber-400">维度灾难</strong>：离散化网格随维度指数增长</li>
+                    <li><strong class="text-amber-400">信息损失</strong>：连续动态被粗糙近似</li>
+                    <li><strong class="text-amber-400">探索-利用困境</strong>：缺乏系统化的探索机制理论分析</li>
+                </ul>
+                <p class="mt-4">
+                    本文首次在连续时间框架下建立RL的严格数学基础，通过<strong class="text-blue-400">探索性随机控制</strong>和<strong class="text-blue-400">熵正则化</strong>实现探索-利用的最优权衡。
+                </p>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                数学模型建立
+            </div>
+            
+            <div class="highlight-box">
+                <h4 class="font-semibold text-blue-400 mb-3">状态动态（受控扩散过程）</h4>
+                <div class="formula-box">
+                    dX<sub>t</sub> = b(X<sub>t</sub>, a<sub>t</sub>)dt + σ(X<sub>t</sub>, a<sub>t</sub>)dW<sub>t</sub>, &nbsp; X<sub>0</sub> = x
+                </div>
+                <p class="text-slate-400 text-sm mt-2">
+                    其中 a<sub>t</sub> ∈ A 是控制（动作），W<sub>t</sub> 是标准布朗运动
+                </p>
+            </div>
+
+            <div class="highlight-box">
+                <h4 class="font-semibold text-purple-400 mb-3">探索性控制问题（熵正则化）</h4>
+                <p class="text-slate-300 mb-3">
+                    不同于传统RL使用确定性策略，本文引入<strong class="text-purple-400">分布值控制</strong>（distributional control）π(·|t,x) ∈ P(A)，表示在状态x时刻t选择动作a的概率分布。
+                </p>
+                <div class="formula-box">
+                    J(x; π) = E[∫<sub>0</sub><sup>T</sup> (∫<sub>A</sub> r(X<sub>t</sub>, a)π(a|t,X<sub>t</sub>)da - λ·H(π(·|t,X<sub>t</sub>)))dt + h(X<sub>T</sub>)]
+                </div>
+                <p class="text-slate-400 text-sm mt-2">
+                    其中 H(π) = -∫<sub>A</sub> π(a)log π(a)da 是策略的熵，λ > 0 是温度参数
+                </p>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                主要定理与理论结果
+            </div>
+
+            <div class="theorem-box">
+                <h4 class="font-semibold text-amber-400 mb-3">定理 1（探索性HJB方程）</h4>
+                <p class="text-slate-300 mb-3">
+                    值函数 V(t,x) = sup<sub>π</sub> J(t,x; π) 满足以下非线性PDE：
+                </p>
+                <div class="formula-box bg-amber-500/5 border-amber-500">
+                    ∂V/∂t + sup<sub>π∈P(A)</sub> {∫<sub>A</sub> [b(x,a)·∇V + ½tr(σσ<sup>T</sup>∇²V) + r(x,a)]π(a)da + λH(π)} = 0
+                </div>
+                <p class="text-slate-400 text-sm mt-3">
+                    <strong>边界条件：</strong>V(T,x) = h(x)
+                </p>
+            </div>
+
+            <div class="theorem-box">
+                <h4 class="font-semibold text-amber-400 mb-3">定理 2（Gibbs最优策略）</h4>
+                <p class="text-slate-300 mb-3">
+                    最优分布值策略具有Gibbs（Boltzmann）形式：
+                </p>
+                <div class="formula-box bg-amber-500/5 border-amber-500">
+                    π*(a|t,x) = exp{(1/λ)[b(x,a)·∇V + ½tr(σσ<sup>T</sup>∇²V) + r(x,a)]} / Z(t,x)
+                </div>
+                <p class="text-slate-400 text-sm mt-3">
+                    其中 Z(t,x) = ∫<sub>A</sub> exp{(1/λ)[...]}da 是归一化常数。温度λ控制探索程度：λ→0时退化为贪婪策略，λ→∞时趋于均匀探索。
+                </p>
+            </div>
+
+            <div class="theorem-box">
+                <h4 class="font-semibold text-amber-400 mb-3">定理 3（值函数表示）</h4>
+                <p class="text-slate-300 mb-3">
+                    值函数可表示为以下线性抛物型PDE的解：
+                </p>
+                <div class="formula-box bg-amber-500/5 border-amber-500">
+                    ∂V/∂t + λ·log ∫<sub>A</sub> exp{(1/λ)[b(x,a)·∇V + ½tr(σσ<sup>T</sup>∇²V) + r(x,a)]}da = 0
+                </div>
+                <p class="text-slate-400 text-sm mt-3">
+                    该方程称为<strong>熵正则化HJB方程</strong>或<strong>软HJB方程</strong>。
+                </p>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                主要贡献与意义
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700">
+                    <h4 class="font-semibold text-blue-400 mb-2">理论贡献</h4>
+                    <ul class="text-sm text-slate-300 space-y-1">
+                        <li>• 建立连续时间RL的严格数学框架</li>
+                        <li>• 通过熵正则化实现探索-利用最优权衡</li>
+                        <li>• 导出Gibbs形式的最优探索策略</li>
+                        <li>• 将问题转化为可解的线性PDE</li>
+                    </ul>
+                </div>
+                <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700">
+                    <h4 class="font-semibold text-green-400 mb-2">算法意义</h4>
+                    <ul class="text-sm text-slate-300 space-y-1">
+                        <li>• 避免时间/空间离散化</li>
+                        <li>• 为后续TD学习、Q学习提供理论基础</li>
+                        <li>• 温度参数λ提供可调节的探索机制</li>
+                        <li>• 连接随机控制与强化学习</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paper 2: Jia & Zhou 2022a (Policy Evaluation) -->
+        <div class="paper-card" id="paper2">
+            <div class="flex items-start justify-between mb-6">
+                <div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-sm font-medium">2022a</span>
+                        <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium">JMLR</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2">
+                        Policy Evaluation and Temporal-Difference Learning in Continuous Time and Space: A Martingale Approach
+                    </h2>
+                    <p class="text-slate-400">
+                        Yanwei Jia, Xun Yu Zhou | 
+                        <span class="text-purple-400">Journal of Machine Learning Research</span> | 
+                        JMLR 23(154):1-55
+                    </p>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                研究问题与动机
+            </div>
+            <div class="text-slate-300 leading-relaxed mb-6">
+                <p class="mb-4">
+                    策略评估（Policy Evaluation, PE）是RL的核心子问题：给定一个固定策略，估计其值函数。在连续时间框架下，传统方法面临：
+                </p>
+                <ul class="space-y-2 ml-6 list-disc">
+                    <li><strong class="text-purple-400">离散化误差</strong>：时间离散化导致TD学习偏差</li>
+                    <li><strong class="text-purple-400">理论空白</strong>：缺乏连续时间TD算法的收敛性保证</li>
+                    <li><strong class="text-purple-400">算法设计</strong>：如何直接从连续时间数据学习？</li>
+                </ul>
+                <p class="mt-4">
+                    本文提出<strong class="text-purple-400">鞅方法</strong>（Martingale Approach），建立连续时间PE的统一理论框架。
+                </p>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                数学模型建立
+            </div>
+
+            <div class="highlight-box">
+                <h4 class="font-semibold text-purple-400 mb-3">值函数定义</h4>
+                <p class="text-slate-300 mb-3">
+                    对于给定策略a(·)，定义状态值函数：
+                </p>
+                <div class="formula-box">
+                    V<sup>a</sup>(x) = E[∫<sub>0</sub><sup>T</sup> r(X<sub>t</sub>, a(X<sub>t</sub>))dt + h(X<sub>T</sub>) | X<sub>0</sub> = x]
+                </div>
+                <p class="text-slate-400 text-sm mt-2">
+                    其中X<sub>t</sub>服从策略a下的动态：dX<sub>t</sub> = b(X<sub>t</sub>, a(X<sub>t</sub>))dt + σ(X<sub>t</sub>, a(X<sub>t</sub>))dW<sub>t</sub>
+                </p>
+            </div>
+
+            <div class="highlight-box">
+                <h4 class="font-semibold text-pink-400 mb-3">鞅条件（核心创新）</h4>
+                <p class="text-slate-300 mb-3">
+                    定义过程 M<sub>t</sub> = V<sup>a</sup>(X<sub>t</sub>) + ∫<sub>0</sub><sup>t</sup> r(X<sub>s</sub>, a(X<sub>s</sub>))ds，则：
+                </p>
+                <div class="formula-box">
+                    M<sub>t</sub> 是鞅 ⟺ V<sup>a</sup> 满足无穷小生成元方程：A<sup>a</sup>V<sup>a</sup> + r<sup>a</sup> = 0
+                </div>
+                <p class="text-slate-400 text-sm mt-2">
+                    其中A<sup>a</sup> = b(x,a)·∇ + ½tr(σσ<sup>T</sup>∇²) 是策略a下的无穷小生成元
+                </p>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                主要定理与TD算法
+            </div>
+
+            <div class="theorem-box">
+                <h4 class="font-semibold text-purple-400 mb-3">定理 1（鞅特征化）</h4>
+                <p class="text-slate-300 mb-3">
+                    值函数V<sup>a</sup>是以下问题的唯一解：
+                </p>
+                <div class="formula-box bg-purple-500/5 border-purple-500">
+                    A<sup>a</sup>V + r<sup>a</sup> = 0, &nbsp; x ∈ ℝ<sup>d</sup><br>
+                    V(x) = h(x), &nbsp; x ∈ ∂𝒪（边界条件）
+                </div>
+                <p class="text-slate-400 text-sm mt-3">
+                    该椭圆型PDE称为<strong>泊松方程</strong>或<strong>值函数方程</strong>。
+                </p>
+            </div>
+
+            <div class="theorem-box">
+                <h4 class="font-semibold text-purple-400 mb-3">定理 2（连续时间TD学习）</h4>
+                <p class="text-slate-300 mb-3">
+                    定义TD误差（无穷小形式）：
+                </p>
+                <div class="formula-box bg-purple-500/5 border-purple-500">
+                    δ<sub>t</sub> = r(X<sub>t</sub>, a(X<sub>t</sub>))dt + dV(X<sub>t</sub>) = [r(X<sub>t</sub>, a(X<sub>t</sub>)) + A<sup>a</sup>V(X<sub>t</sub>)]dt + dM<sub>t</sub>
+                </div>
+                <p class="text-slate-300 mt-3">
+                    其中dM<sub>t</sub> = ∇V·σdW<sub>t</sub>是鞅噪声。参数更新规则：
+                </p>
+                <div class="formula-box bg-purple-500/5 border-purple-500">
+                    dθ<sub>t</sub> = -α<sub>t</sub> ∇<sub>θ</sub>V<sub>θ</sub>(X<sub>t</sub>) · δ<sub>t</sub>
+                </div>
+            </div>
+
+            <div class="theorem-box">
+                <h4 class="font-semibold text-purple-400 mb-3">定理 3（收敛性）</h4>
+                <p class="text-slate-300">
+                    在适当条件下（步长α<sub>t</sub>满足Robbins-Monro条件：∑α<sub>t</sub> = ∞, ∑α<sub>t</sub>² < ∞），连续时间TD算法以概率1收敛到真实值函数。
+                </p>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                算法实现与贡献
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700">
+                    <h4 class="font-semibold text-purple-400 mb-2">连续时间TD(0)</h4>
+                    <div class="formula-box text-sm">
+                        θ<sub>k+1</sub> = θ<sub>k</sub> - α<sub>k</sub> ∇<sub>θ</sub>V<sub>θ</sub>(X<sub>t<sub>k</sub></sub>) · [rΔt + V<sub>θ</sub>(X<sub>t<sub>k+1</sub></sub>) - V<sub>θ</sub>(X<sub>t<sub>k</sub></sub>)]
+                    </div>
+                    <p class="text-slate-400 text-sm mt-2">基于连续时间轨迹的在线更新</p>
+                </div>
+                <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700">
+                    <h4 class="font-semibold text-pink-400 mb-2">连续时间LSTD</h4>
+                    <div class="formula-box text-sm">
+                        θ* = A<sup>-1</sup>b, 其中 A = E[∇V∇V<sup>T</sup>], b = E[∇V·r]
+                    </div>
+                    <p class="text-slate-400 text-sm mt-2">最小二乘时序差分</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paper 3: Jia & Zhou 2022b (Policy Gradient) -->
+        <div class="paper-card" id="paper3">
+            <div class="flex items-start justify-between mb-6">
+                <div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-3 py-1 rounded-full bg-pink-500/20 text-pink-400 text-sm font-medium">2022b</span>
+                        <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium">SSRN</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2">
+                        Policy Gradient and Actor-Critic Learning in Continuous Time and Space: Theory and Algorithms
+                    </h2>
+                    <p class="text-slate-400">
+                        Yanwei Jia, Xun Yu Zhou | 
+                        <span class="text-pink-400">SSRN Electronic Journal</span> | 2021
+                    </p>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                研究问题与动机
+            </div>
+            <div class="text-slate-300 leading-relaxed mb-6">
+                <p class="mb-4">
+                    策略梯度（Policy Gradient, PG）是RL中策略优化的重要方法。在连续时间框架下：
+                </p>
+                <ul class="space-y-2 ml-6 list-disc">
+                    <li>如何将离散时间的PG理论扩展到连续时间？</li>
+                    <li>如何设计连续时间的Actor-Critic架构？</li>
+                    <li>如何结合探索性控制框架？</li>
+                </ul>
+                <p class="mt-4">
+                    本文基于前文的鞅方法和探索性控制框架，建立连续时间PG的严格理论。
+                </p>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                数学模型建立
+            </div>
+
+            <div class="highlight-box">
+                <h4 class="font-semibold text-pink-400 mb-3">参数化策略</h4>
+                <p class="text-slate-300 mb-3">
+                    考虑参数化策略π<sub>θ</sub>(a|t,x)，其中θ ∈ ℝ<sup>p</sup>是策略参数。目标是：
+                </p>
+                <div class="formula-box">
+                    max<sub>θ</sub> J(θ) = E<sup>π<sub>θ</sub></sup>[∫<sub>0</sub><sup>T</sup> (∫<sub>A</sub> r(X<sub>t</sub>, a)π<sub>θ</sub>(a|t,X<sub>t</sub>)da - λH(π<sub>θ</sub>))dt + h(X<sub>T</sub>)]
+                </div>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                主要定理与PG公式
+            </div>
+
+            <div class="theorem-box">
+                <h4 class="font-semibold text-pink-400 mb-3">定理 1（策略梯度定理 - 连续时间）</h4>
+                <p class="text-slate-300 mb-3">
+                    策略梯度可表示为：
+                </p>
+                <div class="formula-box bg-pink-500/5 border-pink-500">
+                    ∇<sub>θ</sub>J(θ) = E<sup>π<sub>θ</sub></sup>[∫<sub>0</sub><sup>T</sup> ∫<sub>A</sub> (Q<sup>π<sub>θ</sub></sup>(t,X<sub>t</sub>,a) - λlog π<sub>θ</sub>(a|t,X<sub>t</sub>) - λ) ∇<sub>θ</sub>log π<sub>θ</sub>(a|t,X<sub>t</sub>) · π<sub>θ</sub>(a|t,X<sub>t</sub>)da dt]
+                </div>
+                <p class="text-slate-400 text-sm mt-3">
+                    其中Q函数定义为：Q<sup>π</sup>(t,x,a) = E<sup>π</sup>[∫<sub>t</sub><sup>T</sup>(r-λH)ds + h | X<sub>t</sub>=x, a<sub>t</sub>=a]
+                </p>
+            </div>
+
+            <div class="theorem-box">
+                <h4 class="font-semibold text-pink-400 mb-3">定理 2（Actor-Critic架构）</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div class="bg-slate-900/50 rounded-lg p-4">
+                        <h5 class="font-semibold text-blue-400 mb-2">Critic更新（值函数估计）</h5>
+                        <div class="formula-box text-sm">
+                            dθ<sub>V</sub> = -α<sub>t</sub> ∇<sub>θ<sub>V</sub></sub>V<sub>θ<sub>V</sub></sub>(X<sub>t</sub>) · δ<sub>t</sub>
+                        </div>
+                        <p class="text-slate-400 text-sm mt-2">使用连续时间TD学习</p>
+                    </div>
+                    <div class="bg-slate-900/50 rounded-lg p-4">
+                        <h5 class="font-semibold text-green-400 mb-2">Actor更新（策略优化）</h5>
+                        <div class="formula-box text-sm">
+                            dθ<sub>π</sub> = β<sub>t</sub> ∇<sub>θ<sub>π</sub></sub>log π<sub>θ<sub>π</sub></sub>(a<sub>t</sub>|t,X<sub>t</sub>) · A<sub>θ<sub>V</sub></sub>(t,X<sub>t</sub>,a<sub>t</sub>)
+                        </div>
+                        <p class="text-slate-400 text-sm mt-2">A是优势函数</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                算法特点
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700 text-center">
+                    <div class="text-3xl mb-2">🎭</div>
+                    <h4 class="font-semibold text-pink-400">Actor</h4>
+                    <p class="text-sm text-slate-400 mt-2">参数化策略π<sub>θ</sub>，输出动作分布</p>
+                </div>
+                <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700 text-center">
+                    <div class="text-3xl mb-2">📊</div>
+                    <h4 class="font-semibold text-blue-400">Critic</h4>
+                    <p class="text-sm text-slate-400 mt-2">估计值函数V和Q函数</p>
+                </div>
+                <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700 text-center">
+                    <div class="text-3xl mb-2">🔄</div>
+                    <h4 class="font-semibold text-green-400">在线更新</h4>
+                    <p class="text-sm text-slate-400 mt-2">连续时间轨迹实时学习</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paper 4: Jia & Zhou 2022c (Q-Learning) -->
+        <div class="paper-card" id="paper4">
+            <div class="flex items-start justify-between mb-6">
+                <div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm font-medium">2022c</span>
+                        <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium">JMLR</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2">
+                        q-Learning in Continuous Time
+                    </h2>
+                    <p class="text-slate-400">
+                        Yanwei Jia, Xun Yu Zhou | 
+                        <span class="text-green-400">Journal of Machine Learning Research</span> | 
+                        JMLR 24(161):1-61
+                    </p>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                研究问题与动机
+            </div>
+            <div class="text-slate-300 leading-relaxed mb-6">
+                <p class="mb-4">
+                    Q-Learning是最流行的无模型RL算法之一。在连续时间框架下：
+                </p>
+                <ul class="space-y-2 ml-6 list-disc">
+                    <li>如何定义连续时间的Q函数？</li>
+                    <li>如何导出连续时间的Bellman最优性方程？</li>
+                    <li>如何设计连续时间的Q学习算法？</li>
+                </ul>
+                <p class="mt-4">
+                    本文建立连续时间Q学习的完整理论框架，并连接SARSA、PG等方法。
+                </p>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                数学模型建立
+            </div>
+
+            <div class="highlight-box">
+                <h4 class="font-semibold text-green-400 mb-3">连续时间Q函数定义</h4>
+                <p class="text-slate-300 mb-3">
+                    不同于离散时间的Q(s,a)，连续时间Q函数Q(t,x,a)依赖于时间t、状态x和瞬时动作a：
+                </p>
+                <div class="formula-box">
+                    Q(t,x,a) = E[∫<sub>t</sub><sup>T</sup> r(X<sub>s</sub>, a<sub>s</sub>)ds + h(X<sub>T</sub>) | X<sub>t</sub>=x, a<sub>t</sub>=a, 最优控制]
+                </div>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                主要定理与Q学习算法
+            </div>
+
+            <div class="theorem-box">
+                <h4 class="font-semibold text-green-400 mb-3">定理 1（连续时间Bellman最优性方程）</h4>
+                <p class="text-slate-300 mb-3">
+                    最优Q函数满足：
+                </p>
+                <div class="formula-box bg-green-500/5 border-green-500">
+                    ∂Q/∂t + sup<sub>a∈A</sub> {b(x,a)·∇<sub>x</sub>Q + ½tr(σσ<sup>T</sup>∇<sub>x</sub>²Q) + r(x,a)} = 0
+                </div>
+                <p class="text-slate-400 text-sm mt-3">
+                    边界条件：Q(T,x,a) = h(x)
+                </p>
+            </div>
+
+            <div class="theorem-box">
+                <h4 class="font-semibold text-green-400 mb-3">定理 2（Q学习更新规则）</h4>
+                <p class="text-slate-300 mb-3">
+                    定义连续时间TD误差：
+                </p>
+                <div class="formula-box bg-green-500/5 border-green-500">
+                    δ<sub>t</sub> = r(X<sub>t</sub>, a<sub>t</sub>)dt + sup<sub>a'</sub> Q(t+dt, X<sub>t+dt</sub>, a') - Q(t, X<sub>t</sub>, a<sub>t</sub>)
+                </div>
+                <p class="text-slate-300 mt-3">
+                    Q函数参数更新：
+                </p>
+                <div class="formula-box bg-green-500/5 border-green-500">
+                    dθ<sub>t</sub> = -α<sub>t</sub> ∇<sub>θ</sub>Q<sub>θ</sub>(t, X<sub>t</sub>, a<sub>t</sub>) · δ<sub>t</sub>
+                </div>
+            </div>
+
+            <div class="theorem-box">
+                <h4 class="font-semibold text-green-400 mb-3">定理 3（与SARSA和PG的联系）</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div class="bg-slate-900/50 rounded-lg p-4">
+                        <h5 class="font-semibold text-amber-400 mb-2">SARSA解释</h5>
+                        <p class="text-sm text-slate-300">
+                            当使用当前策略采样动作a'而非max时，Q学习退化为SARSA
+                        </p>
+                    </div>
+                    <div class="bg-slate-900/50 rounded-lg p-4">
+                        <h5 class="font-semibold text-pink-400 mb-2">PG恢复</h5>
+                        <p class="text-sm text-slate-300">
+                            在适当参数化下，Q学习更新可恢复PG算法
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                统一理论框架
+            </div>
+            <div class="highlight-box">
+                <h4 class="font-semibold text-blue-400 mb-3">连续时间RL算法谱系</h4>
+                <div class="flex flex-wrap items-center justify-center gap-4 text-sm">
+                    <div class="bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-700">
+                        <strong class="text-amber-400">探索性HJB</strong><br>
+                        <span class="text-slate-400">Wang et al. 2020</span>
+                    </div>
+                    <span class="text-slate-500">→</span>
+                    <div class="bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-700">
+                        <strong class="text-purple-400">TD学习</strong><br>
+                        <span class="text-slate-400">Jia & Zhou 2022a</span>
+                    </div>
+                    <span class="text-slate-500">→</span>
+                    <div class="bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-700">
+                        <strong class="text-pink-400">PG/AC</strong><br>
+                        <span class="text-slate-400">Jia & Zhou 2022b</span>
+                    </div>
+                    <span class="text-slate-500">→</span>
+                    <div class="bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-700">
+                        <strong class="text-green-400">Q-Learning</strong><br>
+                        <span class="text-slate-400">Jia & Zhou 2022c</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="paper-card !bg-gradient-to-br !from-blue-900/30 !to-purple-900/30">
+            <h2 class="text-2xl font-bold text-center mb-8 text-white">理论框架总结</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-slate-900/50 rounded-xl p-6 border border-slate-700">
+                    <div class="text-3xl mb-3">🔬</div>
+                    <h3 class="font-bold text-amber-400 mb-2">探索性控制</h3>
+                    <p class="text-sm text-slate-400">
+                        通过熵正则化HJB方程实现探索-利用最优权衡，导出Gibbs形式的最优策略
+                    </p>
+                </div>
+                <div class="bg-slate-900/50 rounded-xl p-6 border border-slate-700">
+                    <div class="text-3xl mb-3">📐</div>
+                    <h3 class="font-bold text-purple-400 mb-2">鞅方法</h3>
+                    <p class="text-sm text-slate-400">
+                        将值函数特征化为鞅条件，建立连续时间TD学习的收敛性理论
+                    </p>
+                </div>
+                <div class="bg-slate-900/50 rounded-xl p-6 border border-slate-700">
+                    <div class="text-3xl mb-3">🎭</div>
+                    <h3 class="font-bold text-pink-400 mb-2">Actor-Critic</h3>
+                    <p class="text-sm text-slate-400">
+                        参数化策略与值函数联合优化，实现连续时间的策略梯度下降
+                    </p>
+                </div>
+                <div class="bg-slate-900/50 rounded-xl p-6 border border-slate-700">
+                    <div class="text-3xl mb-3">🎯</div>
+                    <h3 class="font-bold text-green-400 mb-2">Q学习</h3>
+                    <p class="text-sm text-slate-400">
+                        定义连续时间Q函数，导出Bellman最优性方程，统一SARSA和PG
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-8 p-6 bg-slate-900/50 rounded-xl border border-slate-700">
+                <h3 class="font-bold text-white mb-4 text-center">核心数学工具</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div>
+                        <div class="formula-box text-sm mb-2">
+                            dX<sub>t</sub> = bdt + σdW<sub>t</sub>
+                        </div>
+                        <p class="text-slate-400 text-sm">随机微分方程</p>
+                    </div>
+                    <div>
+                        <div class="formula-box text-sm mb-2">
+                            A<sup>a</sup>V + r<sup>a</sup> = 0
+                        </div>
+                        <p class="text-slate-400 text-sm">泊松方程</p>
+                    </div>
+                    <div>
+                        <div class="formula-box text-sm mb-2">
+                            π* ∝ exp(Q/λ)
+                        </div>
+                        <p class="text-slate-400 text-sm">Gibbs策略</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-slate-500 mt-12 pb-8">
+            <p>基于 Jia & Zhou (2021-2022) 和 Wang, Zariphopoulou & Zhou (2020) 系列工作整理</p>
+            <p class="text-sm mt-2">单人连续时间强化学习理论框架</p>
+        </footer>
+    </div>
+</body>
+</html>
