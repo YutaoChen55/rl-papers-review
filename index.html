@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RL Papers Review - 强化学习论文精读</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-16">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">📚 强化学习论文精读</h1>
+            <p class="text-xl opacity-90">控制理论与强化学习交叉领域文献综述</p>
+            <div class="mt-6 flex justify-center gap-4 text-sm">
+                <span class="px-4 py-2 bg-white/20 rounded-full">多智能体系统</span>
+                <span class="px-4 py-2 bg-white/20 rounded-full">安全控制</span>
+                <span class="px-4 py-2 bg-white/20 rounded-full">连续时间RL</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-6 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            <!-- Card 1: Single-Agent RL -->
+            <a href="single_agent_continuous_time_rl.html" class="block">
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                    <div class="h-2 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                    <div class="p-8">
+                        <div class="text-4xl mb-4">🎯</div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-3">单人连续时间强化学习</h2>
+                        <p class="text-gray-600 text-sm mb-4">
+                            Jia & Zhou 系列工作：探索性HJB方程、鞅方法、策略梯度、Q学习
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">连续时间</span>
+                            <span class="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">随机控制</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">Actor-Critic</span>
+                        </div>
+                        <div class="mt-4 text-sm text-gray-500">
+                            📄 4篇论文 | 2020-2022
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 2: CBF Safety Control -->
+            <a href="cbf_papers_review.html" class="block">
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                    <div class="h-2 bg-gradient-to-r from-amber-500 to-red-500"></div>
+                    <div class="p-8">
+                        <div class="text-4xl mb-4">🛡️</div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-3">安全控制 (CBF)</h2>
+                        <p class="text-gray-600 text-sm mb-4">
+                            Control Barrier Functions：安全验证、CBF-CLF联合优化、多智能体安全规划
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-amber-100 text-amber-700 text-xs rounded-full">障碍函数</span>
+                            <span class="px-3 py-1 bg-red-100 text-red-700 text-xs rounded-full">安全控制</span>
+                            <span class="px-3 py-1 bg-orange-100 text-orange-700 text-xs rounded-full">QP优化</span>
+                        </div>
+                        <div class="mt-4 text-sm text-gray-500">
+                            📄 5篇论文 | 2007-2022
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 3: Multi-Agent Control -->
+            <a href="multi_agent_control_primer.html" class="block">
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                    <div class="h-2 bg-gradient-to-r from-green-500 to-teal-500"></div>
+                    <div class="p-8">
+                        <div class="text-4xl mb-4">🤖</div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-3">多智能体控制入门</h2>
+                        <p class="text-gray-600 text-sm mb-4">
+                            面向控制理论背景：共识控制、编队控制、分布式优化、MARL
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">共识控制</span>
+                            <span class="px-3 py-1 bg-teal-100 text-teal-700 text-xs rounded-full">编队控制</span>
+                            <span class="px-3 py-1 bg-cyan-100 text-cyan-700 text-xs rounded-full">MARL</span>
+                        </div>
+                        <div class="mt-4 text-sm text-gray-500">
+                            📄 7大方向 | 入门指南
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- About Section -->
+        <div class="mt-16 bg-white rounded-2xl shadow-lg p-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">关于这些报告</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">📖 内容特点</h4>
+                    <ul class="text-gray-600 space-y-2 text-sm">
+                        <li>• 详细的问题背景与动机分析</li>
+                        <li>• 完整的数学模型建立过程</li>
+                        <li>• 主要定理与理论结果</li>
+                        <li>• 算法实现与贡献总结</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">🎯 适用读者</h4>
+                    <ul class="text-gray-600 space-y-2 text-sm">
+                        <li>• 控制理论方向研究生</li>
+                        <li>• 强化学习研究者</li>
+                        <li>• 多智能体系统研究者</li>
+                        <li>• 对连续时间RL感兴趣的学习者</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-400 py-8 mt-16">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <p>Generated by WorkBuddy | 基于 Zotero 文献库整理</p>
+            <p class="text-sm mt-2">GitHub: YutaoChen55/rl-papers-review</p>
+        </div>
+    </footer>
+</body>
+</html>
