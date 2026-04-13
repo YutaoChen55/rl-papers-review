@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安全控制 (CBF) 论文精读报告</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .paper-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .paper-title {
+            font-size: 1.4em;
+            color: #1e3c72;
+            font-weight: 700;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .paper-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            color: #666;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .meta-item::before {
+            content: "•";
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .section {
+            margin-top: 20px;
+        }
+        
+        .section-title {
+            font-size: 1.1em;
+            color: #2a5298;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-title::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 2px;
+        }
+        
+        .section-content {
+            color: #444;
+            line-height: 1.8;
+            padding-left: 12px;
+        }
+        
+        .key-points {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        
+        .key-points ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .key-points li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .key-points li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .formula {
+            background: #f0f4f8;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.05em;
+            color: #1e3c72;
+            border-left: 3px solid #667eea;
+            overflow-x: auto;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #667eea30;
+        }
+        
+        .tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .tag.secondary {
+            background: #764ba2;
+        }
+        
+        .tag.tertiary {
+            background: #2a5298;
+        }
+        
+        .summary-section {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 40px;
+        }
+        
+        .summary-section h2 {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .summary-item {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .summary-item h3 {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .summary-item p {
+            opacity: 0.8;
+            font-size: 0.95em;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .content {
+                padding: 20px;
+            }
+            .paper-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ 安全控制论文精读报告</h1>
+            <p>Control Barrier Functions (CBF) 核心理论文献综述</p>
+        </div>
+        
+        <div class="content">
+            <!-- 论文1: Ames 2017 CBF QP -->
+            <div class="paper-card">
+                <div class="paper-title">
+                    Control Barrier Function Based Quadratic Programs for Safety Critical Systems
+                </div>
+                <div class="paper-meta">
+                    <span class="meta-item">作者: Aaron D. Ames, Samuel Coogan, Magnus Egerstedt 等</span>
+                    <span class="meta-item">期刊: IEEE Transactions on Automatic Control</span>
+                    <span class="meta-item">年份: 2017</span>
+                    <span class="meta-item">DOI: 10.1109/TAC.2016.2638961</span>
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <span class="tag">奠基性工作</span>
+                    <span class="tag secondary">CBF理论</span>
+                    <span class="tag tertiary">安全控制</span>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">研究背景与动机</div>
+                    <div class="section-content">
+                        传统控制理论主要关注系统的稳定性（Stability），但在许多安全关键应用中（如自动驾驶、机器人操作），保证系统始终处于安全状态集内比单纯稳定更为重要。控制障碍函数（Control Barrier Function, CBF）提供了一种系统化的方法来保证安全性。
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">核心数学模型</div>
+                    <div class="section-content">
+                        考虑仿射控制系统：
+                        <div class="formula">
+                            ẋ = f(x) + g(x)u
+                        </div>
+                        定义安全集 C = {x ∈ ℝⁿ : h(x) ≥ 0}，其中 h(x) 是连续可微函数。CBF 要求存在扩展类 K 函数 α 使得：
+                        <div class="formula">
+                            L_f h(x) + L_g h(x)u + α(h(x)) ≥ 0
+                        </div>
+                        其中 L_f h 和 L_g h 分别是 h 沿 f 和 g 的李导数。
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">主要贡献</div>
+                    <div class="key-points">
+                        <ul>
+                            <li>提出了基于 CBF 的二次规划（QP）框架，将安全性约束编码为控制输入的约束</li>
+                            <li>证明了在满足 CBF 条件下，系统状态将始终保持在安全集 C 内</li>
+                            <li>将 CBF 与控制李雅普诺夫函数（CLF）结合，同时保证安全性和稳定性</li>
+                            <li>提供了连续时间系统的严格数学保证</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">CBF-CLF 联合优化</div>
+                    <div class="section-content">
+                        核心优化问题形式：
+                        <div class="formula">
+                            min_u ½‖u - u_ref‖²<br>
+                            s.t. L_f V(x) + L_g V(x)u + γV(x) ≤ 0  (稳定性)<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_f h(x) + L_g h(x)u + α(h(x)) ≥ 0  (安全性)
+                        </div>
+                        其中 V(x) 是控制李雅普诺夫函数，h(x) 是控制障碍函数。
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 论文2: Prajna 2007 Barrier Certificates -->
+            <div class="paper-card">
+                <div class="paper-title">
+                    A Framework for Worst-Case and Stochastic Safety Verification Using Barrier Certificates
+                </div>
+                <div class="paper-meta">
+                    <span class="meta-item">作者: Stephen Prajna, Ali Jadbabaie, George J. Pappas</span>
+                    <span class="meta-item">期刊: IEEE Transactions on Automatic Control</span>
+                    <span class="meta-item">年份: 2007</span>
+                    <span class="meta-item">DOI: 10.1109/TAC.2007.902736</span>
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <span class="tag">先驱工作</span>
+                    <span class="tag secondary">安全验证</span>
+                    <span class="tag tertiary">障碍证书</span>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">研究背景</div>
+                    <div class="section-content">
+                        在安全性验证中，传统的可达性分析计算复杂度极高。本文提出了"障碍证书"（Barrier Certificates）的概念，通过构造一个 Lyapunov-like 函数来证明系统的安全性，避免了复杂的可达集计算。
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">障碍证书定义</div>
+                    <div class="section-content">
+                        对于系统 ẋ = f(x)，若存在函数 B(x) 满足：
+                        <div class="formula">
+                            B(x) ≤ 0  ∀x ∈ X₀ (初始集)<br>
+                            B(x) > 0  ∀x ∈ Xᵤ (不安全集)<br>
+                            ∂B/∂x · f(x) ≤ 0  ∀x (沿轨迹不增)
+                        </div>
+                        则系统从 X₀ 出发的轨迹永远不会进入 Xᵤ。
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">主要贡献</div>
+                    <div class="key-points">
+                        <ul>
+                            <li>首次系统性地提出了障碍证书方法用于安全验证</li>
+                            <li>将问题转化为 SOS（Sum of Squares）规划，可用凸优化求解</li>
+                            <li>扩展到了随机系统，处理不确定性下的安全性</li>
+                            <li>为后续 CBF 的发展奠定了理论基础</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="highlight-box">
+                    <strong>与 CBF 的关系：</strong>Prajna 的 Barrier Certificates 主要关注验证（Verification），而 Ames 的 CBF 关注综合（Synthesis）。CBF 可以看作是 Barrier Certificates 在控制综合方向的扩展。
+                </div>
+            </div>
+            
+            <!-- 论文3: Ames 2019 CBF Theory and Applications -->
+            <div class="paper-card">
+                <div class="paper-title">
+                    Control Barrier Functions: Theory and Applications
+                </div>
+                <div class="paper-meta">
+                    <span class="meta-item">作者: Aaron D. Ames, Samuel Coogan, Magnus Egerstedt 等</span>
+                    <span class="meta-item">会议: European Control Conference (ECC)</span>
+                    <span class="meta-item">年份: 2019</span>
+                    <span class="meta-item">DOI: 10.23919/ECC.2019.8796030</span>
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <span class="tag">综述/tutorial</span>
+                    <span class="tag secondary">理论扩展</span>
+                    <span class="tag tertiary">应用案例</span>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">论文定位</div>
+                    <div class="section-content">
+                        本文是 CBF 领域的 Tutorial 论文，系统性地总结了 CBF 的理论框架和各类应用。适合作为入门和综述阅读。
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">理论扩展</div>
+                    <div class="section-content">
+                        <div class="key-points">
+                            <ul>
+                                <li><strong>高阶 CBF：</strong>处理相对度大于1的系统</li>
+                                <li><strong>时变 CBF：</strong>处理时变安全约束</li>
+                                <li><strong>输入约束 CBF：</strong>考虑控制输入饱和</li>
+                                <li><strong>鲁棒 CBF：</strong>处理模型不确定性</li>
+                                <li><strong>指数 CBF：</strong>提供指数收敛的安全保证</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">应用领域</div>
+                    <div class="section-content">
+                        <div class="key-points">
+                            <ul>
+                                <li><strong>自动驾驶：</strong>车道保持、避障、交叉口通行</li>
+                                <li><strong>多机器人系统：</strong>碰撞避免、编队保持</li>
+                                <li><strong>机械臂：</strong>关节限位、奇异点避免</li>
+                                <li><strong>无人机：</strong>空域保持、障碍物规避</li>
+                                <li><strong>行人导航：</strong>人群中的安全导航</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">高阶 CBF 公式</div>
+                    <div class="section-content">
+                        对于相对度 r > 1 的系统，定义高阶 CBF：
+                        <div class="formula">
+                            ψ₀(x) = h(x)<br>
+                            ψ₁(x) = ẏ₀(x) + α₁(ψ₀(x))<br>
+                            ...<br>
+                            ψᵣ(x) = ẏᵣ₋₁(x) + αᵣ(ψᵣ₋₁(x)) ≥ 0
+                        </div>
+                        通过递归构造，将高阶约束转化为可执行的控制约束。
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 论文4: Multi-Agent Safe Planning -->
+            <div class="paper-card">
+                <div class="paper-title">
+                    Multi-Agent Safe Planning with Gaussian Processes
+                </div>
+                <div class="paper-meta">
+                    <span class="meta-item">作者: Lukas Brunke, Melissa Greeff, Adam W. Hall 等</span>
+                    <span class="meta-item">会议: IEEE/RSJ IROS</span>
+                    <span class="meta-item">年份: 2022</span>
+                    <span class="meta-item">DOI: 10.1109/IROS47612.2022.9981112</span>
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <span class="tag">多智能体</span>
+                    <span class="tag secondary">GP模型</span>
+                    <span class="tag tertiary">安全规划</span>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">研究动机</div>
+                    <div class="section-content">
+                        多智能体系统中的安全规划面临两大挑战：1) 环境不确定性；2) 其他智能体的行为不确定性。本文结合高斯过程（Gaussian Processes）和 CBF，实现了数据驱动的安全规划。
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">核心方法</div>
+                    <div class="section-content">
+                        使用 GP 学习系统动力学的不确定性：
+                        <div class="formula">
+                            ẋ = f(x) + g(x)u + d(x)<br>
+                            d(x) ~ GP(0, k(x,x'))
+                        </div>
+                        构建概率 CBF 约束，以高置信度保证安全性。
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">主要贡献</div>
+                    <div class="key-points">
+                        <ul>
+                            <li>将 GP 与 CBF 结合，处理学习模型的不确定性</li>
+                            <li>提出了概率安全保证框架</li>
+                            <li>在多无人机系统中验证了方法的有效性</li>
+                            <li>实现了实时安全规划</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 论文5: Multi-Objective Compositions -->
+            <div class="paper-card">
+                <div class="paper-title">
+                    Multi-Objective Compositions for Collision-Free Connectivity Maintenance in Teams of Mobile Robots
+                </div>
+                <div class="paper-meta">
+                    <span class="meta-item">作者: Lars Lindemann, Dimos V. Dimarogonas</span>
+                    <span class="meta-item">会议: IEEE CDC</span>
+                    <span class="meta-item">年份: 2018</span>
+                    <span class="meta-item">DOI: 10.1109/CDC.2018.8619705</span>
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <span class="tag">多目标</span>
+                    <span class="tag secondary">CBF组合</span>
+                    <span class="tag tertiary">连通性保持</span>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">研究问题</div>
+                    <div class="section-content">
+                        多机器人系统需要同时满足多个安全约束：1) 机器人间避碰；2) 通信连通性保持；3) 障碍物避免。如何将这些约束有效地组合起来？
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">CBF 组合方法</div>
+                    <div class="section-content">
+                        对于多个 CBF h₁, h₂, ..., hₘ，定义组合 CBF：
+                        <div class="formula">
+                            H(x) = min{h₁(x), h₂(x), ..., hₘ(x)}  (最小值组合)<br>
+                            或<br>
+                            H(x) = Σᵢ wᵢ hᵢ(x)  (加权组合)
+                        </div>
+                        不同的组合方式对应不同的安全语义。
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">主要贡献</div>
+                    <div class="key-points">
+                        <ul>
+                            <li>提出了系统化的 CBF 组合框架</li>
+                            <li>分析了不同组合方式的保守性</li>
+                            <li>实现了碰撞避免与连通性保持的联合保证</li>
+                            <li>在移动机器人团队中验证了方法</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 总结部分 -->
+            <div class="summary-section">
+                <h2>📊 CBF 研究脉络总结</h2>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <h3>理论基础</h3>
+                        <p>Prajna 2007 提出 Barrier Certificates 概念，Ames 2016-2017 将其扩展到控制综合领域，形成 CBF 理论框架。</p>
+                    </div>
+                    <div class="summary-item">
+                        <h3>核心方法</h3>
+                        <p>通过构造障碍函数 h(x)，将安全约束编码为控制输入的线性约束，通过 QP 实时求解。</p>
+                    </div>
+                    <div class="summary-item">
+                        <h3>扩展方向</h3>
+                        <p>高阶 CBF、鲁棒 CBF、随机 CBF、多智能体 CBF、与 RL 结合等。</p>
+                    </div>
+                    <div class="summary-item">
+                        <h3>应用场景</h3>
+                        <p>自动驾驶、机器人操作、无人机群、多智能体系统、电力系统等安全关键领域。</p>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+                    <h3>🔑 关键公式速查</h3>
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; margin-top: 15px; font-family: monospace;">
+                        <p style="margin-bottom: 10px;"><strong>CBF 条件：</strong>L_f h + L_g h·u + α(h) ≥ 0</p>
+                        <p style="margin-bottom: 10px;"><strong>CLF-CBF QP：</strong>min ‖u‖² s.t. CLF & CBF 约束</p>
+                        <p><strong>安全集：</strong>C = {x | h(x) ≥ 0}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
